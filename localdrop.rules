@@ -1,0 +1,25 @@
+#ICMP Alerts
+alert icmp any any -> 10.0.0.1 any (dsize: > 2000; msg:"Suspicious ICMP detected towards server"; GID:1; sid:10000012; rev:001;)
+reject icmp any any -> 10.0.0.1 any (dsize: > 2000; msg:"ICMP packets have been blocked!"; GID:1; sid:10000015; detection_filter: track by_dst, count 5, seconds 10;)
+
+#TCP Alerts
+alert tcp any any -> 10.0.0.1 21 (msg:"FTP connection attempt"; sid: 10000031;)
+drop tcp any any -> 10.0.0.1 21 (msg:"FTP connections blocked"; sid: 10000311;)
+drop tcp any any -> any 25 ( content: "exe";   msg:"Suspicious E-Mail Packet has been dropped!";  sid: 10000332;)
+alert tcp any any -> any any (dsize: > 2000; msg:"Suspicious oversized TCP packets iminent"; sid: 10000335;)
+drop tcp any any -> 10.0.0.1 80 (dsize: > 5000; msg: "Big size TCP port 80 drop"; sid: 10000336; detection_filter: track by_dst, count 3, seconds 6;)
+
+drop tcp any any -> 10.0.0.1 any (flags: A; msg: "Possible ACK Flooding imminent, packets dropped"; sid: 10000039; detection_filter: track by_dst, count 3, seconds 6;)
+drop tcp any any -> 10.0.0.1 80 (flags: S; msg:"Possible TCP DoS, packets dropped"; flow: stateless; detection_filter: track by_dst, count 9, seconds 10; sid: 10000330)
+alert tcp any any -> 10.0.0.1 any (flags: SF; msg: "Possible SYN FIN scan on server!"; sid: 10000036;)
+reject tcp any any -> 10.0.0.1 22 ( msg:"SSH Brute Force Attempt";flow:established,to_server; content:"SSH"; nocase; offset:0; depth:4; detection_filter:track by_src, count 30, seconds 60; sid:1000339; rev:1;)
+
+#UDP Alerts
+drop udp any any -> 10.0.0.1 any (dsize: > 2000; msg:"Suspicious oversized UDP packets dropped"; sid: 10000365; detection_filter: track by_dst, count 3, seconds 10;)
+alert udp any any -> 10.0.0.1 any (dsize: > 2000; msg:"Suspicious UDP Oversized packets"; sid: 10000366;)
+
+#NMAMP Alerts
+reject tcp any any -> 10.0.0.1 22 (msg: "NMAP TCP Scan";sid:10000045; rev:2; )
+alert tcp any any -> 10.0.0.1 22 (msg:"Nmap XMAS Tree Scan"; flags:FPU; sid:1000046; rev:1; )
+alert tcp any any -> 10.0.0.1 22 (msg:"Nmap FIN Scan"; flags:F; sid:1000048; rev:1;)
+alert tcp any any -> 10.0.0.1 22 (msg:"Nmap NULL Scan"; flags:0; sid:1000049; rev:1;)
